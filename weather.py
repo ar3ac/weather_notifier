@@ -9,79 +9,12 @@ import locale
 locale.setlocale(locale.LC_TIME, 'it_IT.UTF-8')
 
 
-def get_forecast_summary(city: str = CITY) -> str:
+def get_hourly_forecast_html(city: str = CITY) -> str:
     url = "http://api.openweathermap.org/data/2.5/forecast"
     params = {
         "q": city,
         "appid": OPENWEATHER_API_KEY,
         "units": UNITS,
-        "lang": "it"
-    }
-
-    response = requests.get(url, params=params)
-    data = response.json()
-    print(data)
-
-    if response.status_code != 200:
-        raise Exception(
-            f"Errore API: {data.get('message', 'Errore sconosciuto')}")
-
-    # Raggruppiamo le previsioni per giorno
-    days = defaultdict(list)
-    for entry in data["list"]:
-        date = datetime.fromtimestamp(entry["dt"])
-        day = date.date()
-        days[day].append(entry)
-
-    today = datetime.now().date()
-    selected_days = [today + timedelta(days=i) for i in range(6)]  # oggi + 5
-
-    emoji_map = {
-        "Clear": "☀️",
-        "Clouds": "☁️",
-        "Rain": "🌧️",
-        "Snow": "❄️",
-        "Thunderstorm": "⛈️",
-        "Drizzle": "🌦️",
-        "Mist": "🌫️"
-    }
-
-
-    giorni_settimana = {
-        "Monday": "Lunedì",
-        "Tuesday": "Martedì",
-        "Wednesday": "Mercoledì",
-        "Thursday": "Giovedì",
-        "Friday": "Venerdì",
-        "Saturday": "Sabato",
-        "Sunday": "Domenica"
-    }
-
-    
-    summary = f"📍 Previsioni meteo per {city}:\n\n"
-    for day in selected_days:
-        nome_giorno = giorni_settimana[day.strftime('%A')]
-        entries = days.get(day)
-        if not entries:
-            continue
-
-        temps = [e["main"]["temp"] for e in entries]
-        avg_temp = sum(temps) / len(temps)
-        main_weather = entries[0]["weather"][0]["main"]
-        description = entries[0]["weather"][0]["description"]
-        emoji = emoji_map.get(main_weather, "")
-
-        summary += f"📅 {nome_giorno:<9} {day.strftime('%d/%m')} — 🌡️ {round(avg_temp):>2}°C  — {emoji}  {description.capitalize()}\n"
-
-    return summary
-
-
-def get_hourly_forecast_html(city: str = "Lecco") -> str:
-    url = "http://api.openweathermap.org/data/2.5/forecast"
-    params = {
-        "q": city,
-        "appid": OPENWEATHER_API_KEY,
-        "units": "metric",
         "lang": "it"
     }
 
